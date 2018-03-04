@@ -14,16 +14,18 @@ class Wette:
         for tipp in self.tipps:
             self.quote *= tipp
 
+        return self.quote
+
     def pruefe_ist_gewonnen(self):
         """
         Wette gilt als Gewonnen, falls ALLE Tipps korrekt sind -> keine Teilgewinne oder ähnliches.
         :return:
         """
-        self.ist_gewonnen = True
-
         for i in range(len(self.spiele)):
             if self.spiele[i].quote_tipp_korrekt != self.tipps[i]:
                 return False
+
+        return True
 
     def berechne_umsatz(self):
         if self.ist_gewonnen:

@@ -1,5 +1,7 @@
 import xlrd
 import Spiel
+import Wette
+from random import shuffle
 
 
 def spiele_auslesen():
@@ -39,13 +41,54 @@ def spiele_filtern_min_quote(spiele, min_quote_minimal, min_quote_maximal):
     spiele = [spiel for spiel in spiele if min_quote_minimal <= spiel.min_quote <= min_quote_maximal]
     return spiele
 
+
+def wetten_erzeugen(spiele, einsatz_pro_wette, anzahl_tipps_je_wette):
+    """
+    Erzeugt Kombiwetten aus allen übergebenen Spielen
+    :param spiele: Spiele auf die Tippbedingungen zutreffen - vorher filtern!
+    :param einsatz_pro_wette: Geldeinsatz
+    :param anzahl_tipps_je_wette: Wie viele Tipps bilden die Kombiwette
+    :return: Liste von Wettscheinen
+    """
+    shuffle(spiele)
+
+    wetten = []
+
+    while len(spiele) > anzahl_tipps_je_wette:
+        temp_spiele = spiele[0:anzahl_tipps_je_wette]
+        tipps = []
+
+        for i in range(anzahl_tipps_je_wette):
+            tipps.append(temp_spiele[i].min_quote)
+
+        wetten.append(Wette.Wette(temp_spiele, tipps, einsatz_pro_wette))
+        spiele = spiele[anzahl_tipps_je_wette:]
+
+    return wetten
+
+
 spiele = spiele_auslesen()
-print(len(spiele))
-spiele = spiele_filtern_min_quote(spiele, 1.15, 1.45)
+#print(len(spiele))
+spiele = spiele_filtern_min_quote(spiele, 1.7, 1.8)
 print(len(spiele))
 
-for i in range(5):
-    print(spiele[i])
+#for i in range(5):
+    #print(spiele[i])
+
+
+#Monte Carlo Simulation
+gewinn = 0
+anzahl_simulationen = 10000
+
+for i in range(anzahl_simulationen):
+    # Wette erzeugen
+    wetten = wetten_erzeugen(spiele, 5, 3)
+
+    for wette in wetten:
+        gewinn += wette.gewinn
+
+print("Gewinn: {}".format(gewinn / anzahl_simulationen))
+
 
 
 
