@@ -1,7 +1,54 @@
+from random import shuffle
+
+import matplotlib.pyplot as plt
+import plotly.plotly as py
+import numpy as np
 import xlrd
+
 import Spiel
 import Wette
-from random import shuffle
+
+
+def datenanalyse_absolute_haeufigkeit_quoten(spiele, quotenart):
+    # Relevante Quoten auslesen
+    quoten = []
+
+    # HEIMQUOTE
+    if quotenart == "H":
+        for spiel in spiele:
+            quoten.append(spiel.quote_heimsieg)
+    # GASTQUOTE
+    elif quotenart == "A":
+        for spiel in spiele:
+            quoten.append(spiel.quote_gastsieg)
+    # UNENTSCHIEDENQUOTE
+    elif quotenart == "D":
+        for spiel in spiele:
+            quoten.append(spiel.quote_unentschieden)
+    # MINQUOTE
+    elif quotenart == "MIN":
+        for spiel in spiele:
+            quoten.append(spiel.min_quote)
+
+    # Quoten sortieren
+    quoten.sort()
+
+    # Absolute Häufigkeit bestimmen
+    counts = {}
+    for num in quoten:
+        count = counts.get(num, 0)
+        counts[num] = count + 1
+
+    # Plotten
+    lists = sorted(counts.items())
+    x, y = zip(*lists)  # unpack a list of pairs into two tuples
+
+    plt.plot(x, y)
+    plt.xlabel('Quote')
+    plt.ylabel('Anzahl')
+    plt.title('Häufigkeitsverteilung')
+    plt.grid(True)
+    plt.show()
 
 
 def spiele_auslesen():
@@ -67,27 +114,32 @@ def wetten_erzeugen(spiele, einsatz_pro_wette, anzahl_tipps_je_wette):
     return wetten
 
 
+def monte_carlo_simulation(spiele, anzahl_simulationen, einsatz, spiele_pro_wette):
+    gewinn = 0
+
+    for i in range(anzahl_simulationen):
+        # Wette erzeugen
+        wetten = wetten_erzeugen(spiele, einsatz, spiele_pro_wette)
+
+        for wette in wetten:
+            gewinn += wette.gewinn
+
+    #print("Gewinn: {}".format(gewinn / anzahl_simulationen))
+
+
+###
+# MAIN START
+###
+
 spiele = spiele_auslesen()
-#print(len(spiele))
-spiele = spiele_filtern_min_quote(spiele, 1.7, 1.8)
-print(len(spiele))
-
-#for i in range(5):
-    #print(spiele[i])
+datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
+spiele = spiele_filtern_min_quote(spiele, 1.1, 1.26)
+datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
+#monte_carlo_simulation(spiele, 1000, 5, 3)
 
 
-#Monte Carlo Simulation
-gewinn = 0
-anzahl_simulationen = 10000
 
-for i in range(anzahl_simulationen):
-    # Wette erzeugen
-    wetten = wetten_erzeugen(spiele, 5, 3)
 
-    for wette in wetten:
-        gewinn += wette.gewinn
-
-print("Gewinn: {}".format(gewinn / anzahl_simulationen))
 
 
 
