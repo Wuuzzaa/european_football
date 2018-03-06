@@ -40,6 +40,11 @@ def datenanalyse_absolute_haeufigkeit_quoten(spiele, quotenart):
         count = counts.get(num, 0)
         counts[num] = count + 1
 
+    # Quartile bestimmen
+    quantil_low = np.percentile(quoten, 25)
+    quantil_median = np.percentile(quoten, 50)
+    quantil_high = np.percentile(quoten, 75)
+
     # Plotten
     lists = sorted(counts.items())
     x, y = zip(*lists)  # unpack a list of pairs into two tuples
@@ -47,7 +52,16 @@ def datenanalyse_absolute_haeufigkeit_quoten(spiele, quotenart):
     plt.plot(x, y)
     plt.xlabel('Quote')
     plt.ylabel('Anzahl')
-    plt.title('Häufigkeitsverteilung')
+    plt.title('Quotenkeitsverteilung')
+
+    # Patch (Quartil und Anzahl Datensätze)
+    black_patch = mpatches.Patch(color="black", label="Anzahl Datensätze: {}".format(len(quoten)))
+    red_patch = mpatches.Patch(color='red', label='Unteres Quartil: {}'.format(round(quantil_low, 2)))
+    blue_patch = mpatches.Patch(color="blue", label="Median: {}".format(round(quantil_median, 2)))
+    green_patch = mpatches.Patch(color="green", label="Oberes Quartil: {}".format(round(quantil_high, 2)))
+
+    plt.legend(handles=[black_patch, red_patch, blue_patch, green_patch], loc=0)  # loc= 0 heißt die Location wird automatisch ausgewählt, sodass sie optimal passt siehe https://matplotlib.org/api/legend_api.html
+
     plt.grid(True)
     plt.show()
 
@@ -170,10 +184,11 @@ def simulation_plotten(gewinne, ist_sortiert=True):
 
 spiele = spiele_auslesen()
 datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
-spiele = spiele_filtern_min_quote(spiele, 1.1, 1.26)
+spiele = spiele_filtern_min_quote(spiele, 2.7, 3)
+
 #datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
-gewinne = monte_carlo_simulation(spiele, 100, 5, 3)
-simulation_plotten(gewinne, False)
+#gewinne = monte_carlo_simulation(spiele, 100, 5, 3)
+#simulation_plotten(gewinne, False)
 
 
 
