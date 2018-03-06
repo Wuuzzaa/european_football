@@ -1,6 +1,7 @@
 from random import shuffle
 
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import plotly.plotly as py
 import numpy as np
 import xlrd
@@ -89,7 +90,7 @@ def spiele_filtern_min_quote(spiele, min_quote_minimal, min_quote_maximal):
     return spiele
 
 
-def wetten_erzeugen(spiele, einsatz_pro_wette, anzahl_tipps_je_wette):
+def komibiwetten_erzeugen(spiele, einsatz_pro_wette, anzahl_tipps_je_wette):
     """
     Erzeugt Kombiwetten aus allen übergebenen Spielen
     :param spiele: Spiele auf die Tippbedingungen zutreffen - vorher filtern!
@@ -115,16 +116,52 @@ def wetten_erzeugen(spiele, einsatz_pro_wette, anzahl_tipps_je_wette):
 
 
 def monte_carlo_simulation(spiele, anzahl_simulationen, einsatz, spiele_pro_wette):
-    gewinn = 0
+    gewinne = []
 
     for i in range(anzahl_simulationen):
+        gewinn = 0
+
         # Wette erzeugen
-        wetten = wetten_erzeugen(spiele, einsatz, spiele_pro_wette)
+        wetten = komibiwetten_erzeugen(spiele, einsatz, spiele_pro_wette)
 
         for wette in wetten:
             gewinn += wette.gewinn
 
-    #print("Gewinn: {}".format(gewinn / anzahl_simulationen))
+        # Wetten auswerten
+        gewinne.append(gewinn)
+
+    return gewinne
+
+
+def simulation_plotten(gewinne, ist_sortiert=True):
+    """
+    Gibt einen Plott über den Gewinnverlauf einer Simulation aus mit Min-, Mittel- und Maximalem- Gewinn
+    :param gewinne: Gewinne die geplottet werden sollen
+    :param ist_sortiert: Soll der Plott aufsteigend sortiert sein?
+    :return:
+    """
+    # Gewinne sollen sortiert geplottet werden?
+    if ist_sortiert:
+        y = sorted(gewinne)
+    else:
+        y = gewinne
+
+    x = [x for x in range(len(gewinne))]
+
+    plt.plot(x, y)
+    plt.xlabel('Simulationsnummer')
+    plt.ylabel('Gewinn')
+    plt.title('Gewinnverteilung')
+
+    # Minimaler Gewinn, Mittelwert, Maximaler Gewinn
+    red_patch = mpatches.Patch(color='red', label='Minimaler Gewinn: {}'.format(min(gewinne)))
+    blue_patch = mpatches.Patch(color="blue", label = "Mittlerer Gewinn: {}".format(sum(gewinne)/len(gewinne)))
+    green_patch = mpatches.Patch(color="green", label= "Maximaler Gewinn: {}".format(max(gewinne)))
+
+    plt.legend(handles=[red_patch, blue_patch, green_patch], loc=0)  # loc= 0 heißt die Location wird automatisch ausgewählt, sodass sie optimal passt siehe https://matplotlib.org/api/legend_api.html
+
+    plt.grid(True)
+    plt.show()
 
 
 ###
@@ -134,8 +171,9 @@ def monte_carlo_simulation(spiele, anzahl_simulationen, einsatz, spiele_pro_wett
 spiele = spiele_auslesen()
 datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
 spiele = spiele_filtern_min_quote(spiele, 1.1, 1.26)
-datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
-#monte_carlo_simulation(spiele, 1000, 5, 3)
+#datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
+gewinne = monte_carlo_simulation(spiele, 10, 5, 3)
+simulation_plotten(gewinne, False)
 
 
 
