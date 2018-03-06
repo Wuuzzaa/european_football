@@ -18,7 +18,7 @@ class Wette:
 
     def pruefe_ist_gewonnen(self):
         """
-        Wette gilt als Gewonnen, falls ALLE Tipps korrekt sind -> keine Teilgewinne oder ähnliches.
+        Wette gilt als Gewonnen, falls ALLE Tipps korrekt sind -> keine Teilgewinne oder Ähnliches.
         :return:
         """
         for i in range(len(self.spiele)):
