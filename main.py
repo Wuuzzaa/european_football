@@ -154,9 +154,9 @@ def simulation_plotten(gewinne, ist_sortiert=True):
     plt.title('Gewinnverteilung')
 
     # Minimaler Gewinn, Mittelwert, Maximaler Gewinn
-    red_patch = mpatches.Patch(color='red', label='Minimaler Gewinn: {}'.format(min(gewinne)))
-    blue_patch = mpatches.Patch(color="blue", label = "Mittlerer Gewinn: {}".format(sum(gewinne)/len(gewinne)))
-    green_patch = mpatches.Patch(color="green", label= "Maximaler Gewinn: {}".format(max(gewinne)))
+    red_patch = mpatches.Patch(color='red', label='Minimaler Gewinn: {}'.format(round(min(gewinne),2)))
+    blue_patch = mpatches.Patch(color="blue", label="Mittlerer Gewinn: {}".format(round(sum(gewinne)/len(gewinne), 2)))
+    green_patch = mpatches.Patch(color="green", label="Maximaler Gewinn: {}".format(round(max(gewinne), 2)))
 
     plt.legend(handles=[red_patch, blue_patch, green_patch], loc=0)  # loc= 0 heißt die Location wird automatisch ausgewählt, sodass sie optimal passt siehe https://matplotlib.org/api/legend_api.html
 
@@ -172,7 +172,7 @@ spiele = spiele_auslesen()
 datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
 spiele = spiele_filtern_min_quote(spiele, 1.1, 1.26)
 #datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
-gewinne = monte_carlo_simulation(spiele, 10, 5, 3)
+gewinne = monte_carlo_simulation(spiele, 100, 5, 3)
 simulation_plotten(gewinne, False)
 
 
