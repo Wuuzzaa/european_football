@@ -201,8 +201,8 @@ def simulation_plotten(gewinne, ist_sortiert=True, extremwertfilter=0.1):
 
 def bestimme_beste_parameter(spiele, min_kombinationen, max_kombinationen, quotenart, min_quote, max_quote, quoten_step, simulationen_anzahl, einsatz):
     ergebnisse = []
-    untere_quote = min_quote
-    obere_quote = min_quote + quoten_step
+    untere_quote = round(min_quote, 2)
+    obere_quote = round(min_quote + quoten_step, 2)
 
     # Min -> Max KOMBINATIONEN
     for kombinationen_anzahl in range(min_kombinationen, max_kombinationen+1):
@@ -210,6 +210,8 @@ def bestimme_beste_parameter(spiele, min_kombinationen, max_kombinationen, quote
         while obere_quote <= max_quote:
             # Min -> Max MINQUOTE
             while untere_quote <= max_quote:
+                print("Aktuelle Berechnung: Kombinationen: {}, Unterequote: {}, Oberequote: {}".format(kombinationen_anzahl, untere_quote, obere_quote))
+
                 # Sicherstellen, dass Untere Quote kleiner gleich als Obere Quote ist
                 if untere_quote > obere_quote:
                     break
@@ -217,11 +219,19 @@ def bestimme_beste_parameter(spiele, min_kombinationen, max_kombinationen, quote
                 gewinne = monte_carlo_simulation(spiele, simulationen_anzahl, einsatz, kombinationen_anzahl)
                 ergebnisse.append((kombinationen_anzahl, untere_quote, obere_quote, gewinne))
                 untere_quote += quoten_step
+                untere_quote = round(untere_quote, 2)
+
             obere_quote += quoten_step
             untere_quote = min_quote
 
+            obere_quote = round(obere_quote, 2)
+            untere_quote = round(untere_quote, 2)
+        obere_quote = round(min_quote + quoten_step, 2)
     # Auswerten
-    print(ergebnisse)
+
+    ergebnisse.sort(key=lambda x: sum(x[3]), reverse=True)  # der key=lambda.... sorgt dafür, das nur die summe der Gewinne als sortierargument dient
+    for ergebniss in ergebnisse:
+        print("Kombinationen: {}, Minquote: {}, Maxquote: {}, Durchschnittlichergewinn: {}".format(ergebniss[0], ergebniss[1], ergebniss[2], round(sum(ergebniss[3]) / len(ergebniss[3]), 2)))
 
 ###
 # MAIN START
@@ -233,7 +243,7 @@ spiele = spiele_filtern_min_quote(spiele, 1.1, 1.3)
 #datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
 #gewinne = monte_carlo_simulation(spiele, 10000, 5, 3)
 #simulation_plotten(gewinne, True, 0)
-bestimme_beste_parameter(spiele, 3, 4, "MIN", 1.1, 1.3, 0.05, 10000, 5)
+bestimme_beste_parameter(spiele, 3, 4, "MIN", 1, 1.6, 0.05, 10000, 5)
 
 
 
