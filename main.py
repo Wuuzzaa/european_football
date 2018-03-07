@@ -141,36 +141,57 @@ def monte_carlo_simulation(spiele, anzahl_simulationen, einsatz, spiele_pro_wett
         for wette in wetten:
             gewinn += wette.gewinn
 
-        # Wetten auswerten
         gewinne.append(gewinn)
 
     return gewinne
 
 
-def simulation_plotten(gewinne, ist_sortiert=True):
+def simulation_plotten(gewinne, ist_sortiert=True, extremwertfilter=0.1):
     """
     Gibt einen Plott über den Gewinnverlauf einer Simulation aus mit Min-, Mittel- und Maximalem- Gewinn
     :param gewinne: Gewinne die geplottet werden sollen
     :param ist_sortiert: Soll der Plott aufsteigend sortiert sein?
+    :param extremwertfilter: Wie viel Prozent sollen gefiltert werden. z.B. 0.1 bedeutet die untersten 10%
+    und obersten 10% werden gefiltert. WICHTIG wird nur verwendet falls ist_sortiert = True
     :return:
     """
     # Gewinne sollen sortiert geplottet werden?
     if ist_sortiert:
         y = sorted(gewinne)
+
+        # Extremwerte filtern
+        if extremwertfilter > 0:
+            filteranzahl = int(len(y) * extremwertfilter)
+
+            y = y[filteranzahl: len(y) - filteranzahl]
     else:
         y = gewinne
 
-    x = [x for x in range(len(gewinne))]
+    x = [x for x in range(len(y))]
 
-    plt.plot(x, y)
+    plt.plot(x, y, )
+
+    # Verlust und Gewinnbereich farbig markieren
+    if ist_sortiert:
+        gewinnschwelle_x = -1
+        for i in range(len(y)):
+            if y[i] >= 0:
+                gewinnschwelle_x = i
+                break
+
+        # Verlustfälle
+        plt.fill_between(x[:gewinnschwelle_x], y[:gewinnschwelle_x], 0, color='red', alpha=.2)
+        # Gewinnfälle
+        plt.fill_between(x[gewinnschwelle_x:], y[gewinnschwelle_x:], 0, color='green', alpha=.2)
+
     plt.xlabel('Simulationsnummer')
     plt.ylabel('Gewinn')
     plt.title('Gewinnverteilung')
 
     # Minimaler Gewinn, Mittelwert, Maximaler Gewinn
-    red_patch = mpatches.Patch(color='red', label='Minimaler Gewinn: {}'.format(round(min(gewinne),2)))
-    blue_patch = mpatches.Patch(color="blue", label="Mittlerer Gewinn: {}".format(round(sum(gewinne)/len(gewinne), 2)))
-    green_patch = mpatches.Patch(color="green", label="Maximaler Gewinn: {}".format(round(max(gewinne), 2)))
+    red_patch = mpatches.Patch(color='red', label='Minimaler Gewinn: {}'.format(round(min(y), 2)))
+    blue_patch = mpatches.Patch(color="blue", label="Mittlerer Gewinn: {}".format(round(sum(y)/len(y), 2)))
+    green_patch = mpatches.Patch(color="green", label="Maximaler Gewinn: {}".format(round(max(y), 2)))
 
     plt.legend(handles=[red_patch, blue_patch, green_patch], loc=0)  # loc= 0 heißt die Location wird automatisch ausgewählt, sodass sie optimal passt siehe https://matplotlib.org/api/legend_api.html
 
@@ -178,18 +199,41 @@ def simulation_plotten(gewinne, ist_sortiert=True):
     plt.show()
 
 
+def bestimme_beste_parameter(spiele, min_kombinationen, max_kombinationen, quotenart, min_quote, max_quote, quoten_step, simulationen_anzahl, einsatz):
+    ergebnisse = []
+    untere_quote = min_quote
+    obere_quote = min_quote + quoten_step
+
+    # Min -> Max KOMBINATIONEN
+    for kombinationen_anzahl in range(min_kombinationen, max_kombinationen+1):
+        # Min -> Max MAXQUOTE
+        while obere_quote <= max_quote:
+            # Min -> Max MINQUOTE
+            while untere_quote <= max_quote:
+                # Sicherstellen, dass Untere Quote kleiner gleich als Obere Quote ist
+                if untere_quote > obere_quote:
+                    break
+
+                gewinne = monte_carlo_simulation(spiele, simulationen_anzahl, einsatz, kombinationen_anzahl)
+                ergebnisse.append((kombinationen_anzahl, untere_quote, obere_quote, gewinne))
+                untere_quote += quoten_step
+            obere_quote += quoten_step
+            untere_quote = min_quote
+
+    # Auswerten
+    print(ergebnisse)
+
 ###
 # MAIN START
 ###
 
 spiele = spiele_auslesen()
-datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
-spiele = spiele_filtern_min_quote(spiele, 2.7, 3)
-
 #datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
-#gewinne = monte_carlo_simulation(spiele, 100, 5, 3)
-#simulation_plotten(gewinne, False)
-
+spiele = spiele_filtern_min_quote(spiele, 1.1, 1.3)
+#datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
+#gewinne = monte_carlo_simulation(spiele, 10000, 5, 3)
+#simulation_plotten(gewinne, True, 0)
+bestimme_beste_parameter(spiele, 3, 4, "MIN", 1.1, 1.3, 0.05, 10000, 5)
 
 
 
