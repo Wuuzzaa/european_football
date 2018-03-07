@@ -2,6 +2,7 @@ from random import shuffle
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import itertools
 import plotly.plotly as py
 import numpy as np
 import xlrd
@@ -104,9 +105,9 @@ def spiele_filtern_min_quote(spiele, min_quote_minimal, min_quote_maximal):
     return spiele
 
 
-def komibiwetten_erzeugen(spiele, einsatz_pro_wette, anzahl_tipps_je_wette):
+def kombiwetten_erzeugen_zufaellig(spiele, einsatz_pro_wette, anzahl_tipps_je_wette):
     """
-    Erzeugt Kombiwetten aus allen übergebenen Spielen
+    Erzeugt zufällige Kombiwetten aus allen übergebenen Spielen
     :param spiele: Spiele auf die Tippbedingungen zutreffen - vorher filtern!
     :param einsatz_pro_wette: Geldeinsatz
     :param anzahl_tipps_je_wette: Wie viele Tipps bilden die Kombiwette
@@ -129,6 +130,13 @@ def komibiwetten_erzeugen(spiele, einsatz_pro_wette, anzahl_tipps_je_wette):
     return wetten
 
 
+def kombiwetten_erzeugen_combinations(spiele, einsatz_pro_wette, anzahl_tipps_je_wette):
+    #x = [1, 2, 3]
+    #print(list(itertools.combinations(x, 2)))
+
+    print(list(itertools.combinations(spiele, anzahl_tipps_je_wette)))
+
+
 def monte_carlo_simulation(spiele, anzahl_simulationen, einsatz, spiele_pro_wette):
     gewinne = []
 
@@ -136,7 +144,7 @@ def monte_carlo_simulation(spiele, anzahl_simulationen, einsatz, spiele_pro_wett
         gewinn = 0
 
         # Wette erzeugen
-        wetten = komibiwetten_erzeugen(spiele, einsatz, spiele_pro_wette)
+        wetten = kombiwetten_erzeugen_zufaellig(spiele, einsatz, spiele_pro_wette)
 
         for wette in wetten:
             gewinn += wette.gewinn
@@ -238,12 +246,13 @@ def bestimme_beste_parameter(spiele, min_kombinationen, max_kombinationen, quote
 ###
 
 spiele = spiele_auslesen()
-#datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
-spiele = spiele_filtern_min_quote(spiele, 1.1, 1.3)
+spiele = spiele_filtern_min_quote(spiele, 1, 1.2)
+datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
+kombiwetten_erzeugen_combinations(spiele, 5, 3)
 #datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
 #gewinne = monte_carlo_simulation(spiele, 10000, 5, 3)
 #simulation_plotten(gewinne, True, 0)
-bestimme_beste_parameter(spiele, 3, 4, "MIN", 1, 1.6, 0.05, 10000, 5)
+#bestimme_beste_parameter(spiele, 3, 4, "MIN", 1, 1.6, 0.05, 10000, 5)
 
 
 
