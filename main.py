@@ -207,10 +207,13 @@ def simulation_plotten(gewinne, ist_sortiert=True, extremwertfilter=0.1):
     plt.show()
 
 
-def bestimme_beste_parameter(spiele, min_kombinationen, max_kombinationen, quotenart, min_quote, max_quote, quoten_step, simulationen_anzahl, einsatz):
+def bestimme_beste_parameter(spiele_ungefiltert, min_kombinationen, max_kombinationen, quotenart, min_quote, max_quote, quoten_step, simulationen_anzahl, einsatz):
     ergebnisse = []
     untere_quote = round(min_quote, 2)
     obere_quote = round(min_quote + quoten_step, 2)
+
+    # Vorfiltern mit min und max quote -> schnelleres "detailfiltern"
+    spiele_ungefiltert = spiele_filtern_min_quote(spiele_ungefiltert, min_quote, max_quote)
 
     # Min -> Max KOMBINATIONEN
     for kombinationen_anzahl in range(min_kombinationen, max_kombinationen+1):
@@ -224,7 +227,8 @@ def bestimme_beste_parameter(spiele, min_kombinationen, max_kombinationen, quote
                 if untere_quote > obere_quote:
                     break
 
-                gewinne = monte_carlo_simulation(spiele, simulationen_anzahl, einsatz, kombinationen_anzahl)
+                spiele_gefiltert = spiele_filtern_min_quote(spiele_ungefiltert, untere_quote, obere_quote)
+                gewinne = monte_carlo_simulation(spiele_gefiltert, simulationen_anzahl, einsatz, kombinationen_anzahl)
                 ergebnisse.append((kombinationen_anzahl, untere_quote, obere_quote, gewinne))
                 untere_quote += quoten_step
                 untere_quote = round(untere_quote, 2)
@@ -246,13 +250,12 @@ def bestimme_beste_parameter(spiele, min_kombinationen, max_kombinationen, quote
 ###
 
 spiele = spiele_auslesen()
-spiele = spiele_filtern_min_quote(spiele, 1, 1.2)
+spiele = spiele_filtern_min_quote(spiele, 1.7, 1.9)
 datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
-kombiwetten_erzeugen_combinations(spiele, 5, 3)
-#datenanalyse_absolute_haeufigkeit_quoten(spiele, "MIN")
-#gewinne = monte_carlo_simulation(spiele, 10000, 5, 3)
-#simulation_plotten(gewinne, True, 0)
-#bestimme_beste_parameter(spiele, 3, 4, "MIN", 1, 1.6, 0.05, 10000, 5)
+#kombiwetten_erzeugen_combinations(spiele, 5, 3)
+gewinne = monte_carlo_simulation(spiele, 10000, 5, 3)
+simulation_plotten(gewinne, True, 0)
+#bestimme_beste_parameter(spiele, 1, 4, "MIN", 1, 1.9, 0.05, 250, 5)
 
 
 
